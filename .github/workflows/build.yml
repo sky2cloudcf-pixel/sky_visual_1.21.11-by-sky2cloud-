@@ -15,14 +15,23 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
-        run: ./gradlew build
+      - name: Build with Gradle (Auto-locate gradlew)
+        run: |
+          if [ -f "./gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew build
+          elif [ -f "gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew build
+          else
+            # Якщо gradlew лежить глибше або використовується інший шлях
+            find . -name "gradlew" -exec chmod +x {} \;
+            find . -name "gradlew" -exec {} build \;
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: SkyVisual-Mod
-          path: build/libs/
+          path: '**/build/libs/*
+          .jar'
