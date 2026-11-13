@@ -24,7 +24,6 @@ jobs:
             chmod +x gradlew
             ./gradlew build
           else
-            # Якщо gradlew лежить глибше або використовується інший шлях
             find . -name "gradlew" -exec chmod +x {} \;
             find . -name "gradlew" -exec {} build \;
           fi
@@ -33,5 +32,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SkyVisual-Mod
-          path: '**/build/libs/*
-          .jar'
+          path: |
+            build/libs/*.jar
+            **/build/libs/
+            *.jar
