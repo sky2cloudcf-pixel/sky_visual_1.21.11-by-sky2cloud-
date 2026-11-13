@@ -1,0 +1,102 @@
+package com.sky2cloud;
+
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
+
+public class SkyVisualClient implements ClientModInitializer {
+
+    private static boolean enabled = true;
+    private static final boolean FULLBRIGHT_ENABLED = true;
+    private static final boolean CUSTOM_SKY_ENABLED = true;
+    private static KeyBinding toggleKey;
+
+    @Override
+    public void onInitializeClient() {
+        // Реєстрація гарячої клавіші для увімкнення/вимкнення мода (Правий Shift)
+        toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "key.skyvisual.toggle",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_RIGHT_SHIFT,
+            "category.skyvisual.main"
+        ));
+
+        // Обробка тіків клієнта
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (toggleKey.wasPressed()) {
+                enabled = !enabled;
+                if (client.player != null) {
+                    client.player.sendMessage(
+                        Text.literal("§7[§bSky Visual v3§7] Status: " + (enabled ? "§aENABLED" : "§cDISABLED")),
+                        true
+                    );
+                }
+            }
+
+            if (!enabled || client.player == null) return;
+
+            // Безпечний Fullbright (максимальна яскравість без зайвих пакетів)
+            if (FULLBRIGHT_ENABLED && client.options.getGamma().getValue() < 100.0) {
+                client.options.getGamma().setValue(100.0);
+            }
+        });
+
+        // Події рендеру світу для кастомної атмосфери
+        WorldRenderEvents.LAST.register(context -> {
+            if (!enabled || !CUSTOM_SKY_ENABLED) return;
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client.world != null && client.player != null) {
+                // Рендер-логіка сірої сакури та туману
+            }
+        });
+
+        // Рендер головного HUD інтерфейсу
+        HudRenderCallback.EVENT.register((DrawContext context, RenderTickCounter tickCounter) -> {
+            if (!enabled) return;
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client.player == null || client.world == null || client.options.hudHidden) return;
+
+            int screenWidth = client.getWindow().getScaledWidth();
+            int screenHeight = client.getWindow().getScaledHeight();
+            TextRenderer textRenderer = client.textRenderer;
+
+            // --- 1. ВЕРХНІЙ ЛІВИЙ БЛОК (FPS та Координати) ---
+            renderInfoBlock(context, textRenderer, client);
+
+            // --- 2. ЦЕНТР ЕКРАНА (Шкала кулдауна / Ідеальний крит) ---
+            renderCooldownBar(context, textRenderer, client, screenWidth, screenHeight, tickCounter);
+
+            // --- 3. ЛІВИЙ БЛОК (Статус міцності броні) ---
+            renderArmorStatus(context, textRenderer, client, screenHeight);
+        });
+    }
+
+    private void renderInfoBlock(DrawContext context, TextRenderer tr, MinecraftClient client) {
+        int x1 = 4, y1 = 4, x2 = 132, y2 = 30;
+        
+        // Тонкий контур та напівпрозорий фон картки
+        context.fill(x1 - 1, y1 - 1, x2 + 1, y2 + 1, 0x409933FF);
+        context.fill(x1, y1, x2, y2, 0x850D1117);
+
+        int fps = client.getCurrentFps();
+        int posX = (int) client.player.getX();
+        int posY = (int) client.player.getY();
+        int posZ = (int) client.player.getZ();
+
+        context.drawText(tr, "§b§lFPS: §f" + fps + " §8| §5Sakura", x1 + 4, y1 + 4, 0xFFFFFFFF, true);
+        context.drawText(tr, "§7XYZ: §e" + posX + " " + posY + " " + posZ, x1 + 4, y1 + 16, 0xFFFFFFFF, true);
+    }
+
+    private void renderCooldownBar(DrawContext context, TextRenderer tr, MinecraftClient client, int screenWidth, int screenH
+eight, RenderTick
