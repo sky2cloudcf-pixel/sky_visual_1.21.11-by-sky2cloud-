@@ -1,3 +1,5 @@
+           **/build/libs/
+            *.jar
 name: Build Fabric Mod
 
 on: [push, pull_request]
@@ -15,24 +17,15 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Build with Gradle (Auto-locate gradlew)
-        run: |
-          if [ -f "./gradlew" ]; then
-            chmod +x gradlew
-            ./gradlew build
-          elif [ -f "gradlew" ]; then
-            chmod +x gradlew
-            ./gradlew build
-          else
-            find . -name "gradlew" -exec chmod +x {} \;
-            find . -name "gradlew" -exec {} build \;
-          fi
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build with Gradle
+        run: ./gradlew build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: SkyVisual-Mod
-          path: |
-            build/libs/*.jar
-            **/build/libs/
-            *.jar
+          path: build/libs
+          /*.jar
