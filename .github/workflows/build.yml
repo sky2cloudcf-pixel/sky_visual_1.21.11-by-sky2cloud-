@@ -26,4 +26,3 @@ jobs:
         with:
           name: SkyVisual-Mod
           path: build/libs
-          /*.jar
