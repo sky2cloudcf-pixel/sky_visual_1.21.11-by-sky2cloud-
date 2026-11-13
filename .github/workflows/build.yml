@@ -1,5 +1,3 @@
-           **/build/libs/
-            *.jar
 name: Build Fabric Mod
 
 on: [push, pull_request]
