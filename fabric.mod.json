@@ -1,0 +1,23 @@
+{
+    "schemaVersion": 1,
+    "id": "skyvisual",
+    "version": "${version}",
+    "name": "Sky Visual",
+    "description": "Advanced PvP Client-Style Visuals, Custom Gray Sakura Sky & Cooldown Sync for 1.21.1",
+    "authors": [
+        "sky2cloud"
+    ],
+    "license": "MIT",
+    "environment": "client",
+    "entrypoints": {
+        "client": [
+            "com.skyvisual.mod.SkyVisualClient"
+        ]
+    },
+    "depends": {
+        "fabricloader": ">=0.16.0",
+        "minecraft": "1.21.1",
+        "java": ">=21",
+        "fabric-api": "*"
+    }
+}
