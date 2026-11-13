@@ -14,10 +14,13 @@ jobs:
           distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.10'
       - name: Build with Gradle
         run: gradle build
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: mod
-          path: build/list
+          path: build/lib
+          s/
